@@ -83,9 +83,11 @@ jobs:
             
             # Stop and remove old containers if exist
             docker-compose down 2>/dev/null || true
+            docker stop amr-frontend 2>/dev/null || true
+            docker rm amr-frontend 2>/dev/null || true
             
             # Start services with docker-compose
-            docker-compose up -d
+            docker-compose up -d --build
             
             # Clean up old images
             docker image prune -af --filter "until=24h"
