@@ -10,6 +10,7 @@ echo "🚀 Starting deployment for AMR Echafaudage..."
 # Configuration
 CONTAINER_NAME="amr-frontend"
 IMAGE_NAME="ghcr.io/$(git config --get remote.origin.url | sed 's/.*://;s/.git$//')/amr-echafaudage-frontend:latest"
+# Note: This script should be run from the ~/amr-echaufaudage directory on VPS
 PORT=3000
 NETWORK_NAME="amr-network"
 

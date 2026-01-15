@@ -14,7 +14,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 # Configuration
-PROJECT_DIR="$HOME/amr-echafaudage"
+PROJECT_DIR="$HOME/amr-echaufaudage"
 NETWORK_NAME="amr-network"
 
 # Check if running as ubuntu user
