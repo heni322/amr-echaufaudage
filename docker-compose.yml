@@ -8,8 +8,9 @@ services:
       dockerfile: Dockerfile
     container_name: amr-frontend
     restart: unless-stopped
-    ports:
-      - "3000:80"  # Using port 3000 to avoid conflicts
+    # NO PORT MAPPING - only internal network
+    networks:
+      - amr-network
     environment:
       NODE_ENV: production
     healthcheck:
@@ -18,8 +19,27 @@ services:
       timeout: 3s
       retries: 3
 
-networks:
-  default:
-    name: amr-network
-    external: true
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: amr-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - amr-network
+    depends_on:
+      - frontend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
 
+networks:
+  amr-network:
+    external: true

@@ -81,18 +81,11 @@ jobs:
             # Pull latest image
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             
-            # Stop and remove old container if exists
-            docker stop amr-frontend 2>/dev/null || true
-            docker rm amr-frontend 2>/dev/null || true
+            # Stop and remove old containers if exist
+            docker-compose down 2>/dev/null || true
             
-            # Run new container on port 3000 (avoiding conflicts with existing services)
-            docker run -d \
-              --name amr-frontend \
-              --restart unless-stopped \
-              --network amr-network \
-              -p 3000:80 \
-              -e NODE_ENV=production \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            # Start services with docker-compose
+            docker-compose up -d
             
             # Clean up old images
             docker image prune -af --filter "until=24h"
