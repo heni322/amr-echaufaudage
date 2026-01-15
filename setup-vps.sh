@@ -71,19 +71,13 @@ fi
 if [ ! -f ".env" ]; then
     echo -e "${YELLOW}📝 Creating .env file...${NC}"
     cat > .env << 'EOF'
-# Database Configuration
-POSTGRES_DB=amr_db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=change_this_password_123
-
-# Backend API URL
-VITE_API_URL=http://localhost:4000
-
 # Node Environment
 NODE_ENV=production
+
+# Optional: If you need to connect to an external API
+# API_URL=https://api.example.com
 EOF
-    echo -e "${YELLOW}⚠️  Please edit .env file with secure values:${NC}"
-    echo "nano .env"
+    echo -e "${GREEN}✅ .env file created${NC}"
 else
     echo -e "${GREEN}✅ .env file already exists${NC}"
 fi
@@ -112,21 +106,16 @@ docker network ls
 # Final instructions
 echo -e "\n${GREEN}🎉 VPS setup completed!${NC}"
 echo -e "\n${YELLOW}Next steps:${NC}"
-echo "1. Edit .env file: ${GREEN}nano $PROJECT_DIR/.env${NC}"
-echo "2. Verify GitHub repository: ${GREEN}cd $PROJECT_DIR && git status${NC}"
-echo "3. Test Docker: ${GREEN}docker run hello-world${NC}"
-echo "4. Add SSH public key to GitHub: ${GREEN}cat ~/.ssh/id_ed25519.pub${NC}"
-echo "5. Configure GitHub Actions secrets in your repository"
-echo "6. Push to trigger deployment or run: ${GREEN}./deploy.sh${NC}"
+echo "1. Verify repository: ${GREEN}cd $PROJECT_DIR && git status${NC}"
+echo "2. Test Docker: ${GREEN}docker run hello-world${NC}"
+echo "3. Configure GitHub Actions secrets in your repository"
+echo "4. Push to trigger deployment or run: ${GREEN}./deploy.sh${NC}"
 
 echo -e "\n${YELLOW}📊 Service Ports:${NC}"
 echo "- Frontend: http://$(curl -s ifconfig.me):3000"
-echo "- Backend: http://$(curl -s ifconfig.me):4000"
-echo "- PostgreSQL: Internal (5432)"
 
 echo -e "\n${YELLOW}🔐 Security Recommendations:${NC}"
-echo "- Change PostgreSQL password in .env"
-echo "- Configure firewall: sudo ufw allow 3000,4000/tcp"
+echo "- Configure firewall: sudo ufw allow 3000/tcp"
 echo "- Set up HTTPS with Let's Encrypt"
 echo "- Enable automatic security updates"
 

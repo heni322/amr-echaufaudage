@@ -1,48 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-amr_db}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - amr-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Backend Service
-  backend:
-    image: ghcr.io/dhia123zeiri/comptable/crm-backend:latest
-    container_name: backend
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-amr_db}
-      NODE_ENV: production
-      PORT: 4000
-    ports:
-      - "4000:4000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - amr-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
   # Frontend Service (AMR Echafaudage Landing Page)
   frontend:
     build:
@@ -52,22 +10,15 @@ services:
     restart: unless-stopped
     ports:
       - "3000:80"  # Using port 3000 to avoid conflicts
-    depends_on:
-      - backend
-    networks:
-      - amr-network
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
+      NODE_ENV: production
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
       interval: 30s
       timeout: 3s
       retries: 3
 
 networks:
-  amr-network:
-    driver: bridge
-
-volumes:
-  postgres_data:
-    driver: local
+  default:
+    name: amr-network
+    external: true

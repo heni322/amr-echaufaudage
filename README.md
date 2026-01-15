@@ -1,6 +1,8 @@
 # AMR Echafaudage - Landing Page
 
-React + Vite landing page with Docker deployment and CI/CD pipeline.
+🌐 **www.amrechaudage.fr**
+
+Static React + Vite landing page with Docker deployment and CI/CD pipeline.
 
 ## 🚀 Quick Start
 
@@ -30,13 +32,13 @@ npm run preview
 ### Using Docker Compose
 
 ```bash
-# Build and start all services
+# Build and start the service
 docker-compose up -d
 
 # View logs
 docker-compose logs -f frontend
 
-# Stop services
+# Stop service
 docker-compose down
 ```
 
@@ -45,6 +47,9 @@ The frontend will be available at `http://localhost:3000`
 ### Manual Docker Deployment
 
 ```bash
+# Create network (if not exists)
+docker network create amr-network
+
 # Build image
 docker build -t amr-frontend .
 
@@ -83,20 +88,24 @@ The project uses GitHub Actions for automated deployment to VPS.
 
    - `VPS_HOST`: Your VPS IP address (e.g., `123.45.67.89`)
    - `VPS_USERNAME`: SSH username (usually `ubuntu` or `root`)
-   - `VPS_SSH_KEY`: Your private SSH key
+   - `VPS_SSH_KEY`: Your private SSH key (from `~/.ssh/github_deploy`)
    - `VPS_PORT`: SSH port (default: 22)
 
-3. **Generate SSH Key** (if you don't have one)
+3. **Get Your SSH Key from VPS**
 
    ```bash
-   # On your local machine
-   ssh-keygen -t ed25519 -C "github-actions"
+   # SSH into your VPS
+   ssh ubuntu@your-vps-ip
    
-   # Copy public key to VPS
-   ssh-copy-id -i ~/.ssh/id_ed25519.pub ubuntu@your-vps-ip
+   # Display the private key (if you have github_deploy)
+   cat ~/.ssh/github_deploy
    
-   # Copy private key content for GitHub secret
-   cat ~/.ssh/id_ed25519
+   # OR generate a new one
+   ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_deploy -N ""
+   cat ~/.ssh/github_deploy.pub >> ~/.ssh/authorized_keys
+   cat ~/.ssh/github_deploy
+   
+   # Copy the entire output (including BEGIN/END lines) to GitHub Secret
    ```
 
 4. **Prepare VPS**
@@ -114,10 +123,8 @@ The project uses GitHub Actions for automated deployment to VPS.
    # Create Docker network (if not exists)
    docker network create amr-network || true
    
-   # Create .env file
+   # Create .env file (optional for this static site)
    cp .env.example .env
-   # Edit .env with your configurations
-   nano .env
    ```
 
 5. **Trigger Deployment**
@@ -142,23 +149,28 @@ The project uses GitHub Actions for automated deployment to VPS.
 
 ## 🔧 Configuration
 
+### Domain
+
+**Production:** https://www.amrechaudage.fr
+**Alternative:** https://amrechaudage.fr
+
+See `DOMAIN-SETUP.md` for complete domain configuration guide.
+
 ### Port Configuration
 
 **Current Services:**
-- PostgreSQL: Port 5432 (internal)
-- Backend API: Port 4000
 - **Frontend: Port 3000** ✅ (avoids conflicts)
+- **Nginx Reverse Proxy: Port 80/443** (for domain access)
 
 ### Environment Variables
 
 Create `.env` file based on `.env.example`:
 
 ```bash
-POSTGRES_DB=amr_db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_secure_password
-VITE_API_URL=http://localhost:4000
 NODE_ENV=production
+
+# Optional: If you need to connect to an external API
+# API_URL=https://api.example.com
 ```
 
 ### Nginx Configuration
@@ -185,20 +197,16 @@ docker logs -f amr-frontend
 docker inspect amr-frontend | grep -A 10 Health
 ```
 
-### Access Health Endpoints
+### Access Health Endpoint
 
 ```bash
 # Frontend health
-curl http://localhost:3000/health
-
-# Backend health
-curl http://localhost:4000/health
+curl http://localhost:3000/
 ```
 
 ## 🔒 Security
 
 - HTTPS should be configured via reverse proxy (nginx/traefik)
-- Environment variables for sensitive data
 - Security headers in nginx configuration
 - Regular dependency updates
 - Container health checks
@@ -247,15 +255,21 @@ docker-compose up -d --build
 amr-echafaudage/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml          # CI/CD pipeline
-├── public/                     # Static assets
-├── src/                        # React source code
-├── .env.example               # Environment template
-├── docker-compose.yml         # Multi-service configuration
-├── Dockerfile                 # Frontend container
-├── nginx.conf                 # Web server configuration
-├── deploy.sh                  # Manual deployment script
-└── package.json              # Node dependencies
+│       ├── deploy.yml              # CI/CD pipeline
+│       └── ci.yml                  # Build testing
+├── public/                         # Static assets
+├── src/                            # React source code
+├── .env.example                    # Environment template
+├── docker-compose.yml              # Container configuration
+├── Dockerfile                      # Frontend container
+├── nginx.conf                      # Web server configuration
+├── deploy.sh                       # Manual deployment script
+├── setup-vps.sh                    # VPS setup script
+├── DOMAIN-SETUP.md                 # Domain configuration guide
+├── QUICK-DOMAIN-SETUP.md           # Quick domain setup
+├── DEPLOYMENT.md                   # Deployment guide
+├── TROUBLESHOOTING.md              # Issue solutions
+└── package.json                    # Node dependencies
 ```
 
 ## 🤝 Contributing
@@ -275,7 +289,7 @@ This project is private and confidential.
 For issues or questions:
 - Check GitHub Issues
 - Review GitHub Actions logs
-- Contact the development team
+- Check `TROUBLESHOOTING.md`
 
 ---
 
