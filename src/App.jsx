@@ -69,13 +69,6 @@ const AMRLanding = () => {
     }
   ];
 
-  const projects = [
-    { type: "Rénovation façade", location: "Paris 15ème" },
-    { type: "Chantier industriel", location: "Lyon" },
-    { type: "Immeuble résidentiel", location: "Marseille" },
-    { type: "Site commercial", location: "Toulouse" }
-  ];
-
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       {/* Navigation */}
@@ -238,14 +231,14 @@ const AMRLanding = () => {
               </div>
             </div>
             <div className="relative aspect-video bg-slate-800 rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 cursor-pointer hover:bg-orange-600 transition-colors">
-                    <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1"></div>
-                  </div>
-                  <p className="text-slate-400">Vidéo de présentation</p>
-                </div>
-              </div>
+              <video 
+                className="absolute inset-0 w-full h-full object-cover"
+                controls
+                poster="/assets/image-1.jpeg"
+              >
+                <source src="/assets/video-1.mp4" type="video/mp4" />
+                Votre navigateur ne supporte pas la lecture de vidéos.
+              </video>
             </div>
           </div>
         </div>
@@ -263,16 +256,20 @@ const AMRLanding = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {projects.map((project, idx) => (
-              <div key={idx} className="group relative aspect-square bg-slate-800 rounded-2xl overflow-hidden cursor-pointer">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-900"></div>
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-all"></div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((num) => (
+              <div key={num} className="group relative aspect-square bg-slate-800 rounded-2xl overflow-hidden cursor-pointer">
+                <img 
+                  src={`/assets/image-${num}.jpeg`} 
+                  alt={`Projet ${num}`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all"></div>
                 <div className="absolute inset-0 flex flex-col justify-end p-6">
-                  <h3 className="text-white font-bold text-lg mb-1">{project.type}</h3>
+                  <h3 className="text-white font-bold text-lg mb-1">Projet {num}</h3>
                   <p className="text-orange-400 text-sm flex items-center">
                     <MapPin className="w-4 h-4 mr-1" />
-                    {project.location}
+                    Chantier réalisé
                   </p>
                 </div>
               </div>
