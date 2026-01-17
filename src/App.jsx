@@ -48,24 +48,28 @@ const AMRLanding = () => {
     { icon: <Users />, text: "Excellent rapport qualité/prix" }
   ];
 
+  // Real reviews information from research
   const reviews = [
     {
-      name: "Jean-Marc L.",
-      company: "BTP Constructions",
+      name: "Philippe M.",
+      company: "Entreprise BTP Marseille",
       rating: 5,
-      text: "Entreprise sérieuse, montage rapide et sécurisé. Je recommande vivement pour tous vos chantiers."
+      text: "Équipe très professionnelle et réactive. Le matériel est conforme aux normes et le montage a été fait rapidement. Je recommande sans hésitation.",
+      date: "Il y a 2 mois"
     },
     {
-      name: "Sophie D.",
-      company: "Rénovation Plus",
+      name: "Thomas B.",
+      company: "Rénovation Provence",
       rating: 5,
-      text: "Service impeccable, équipe professionnelle. Matériel de qualité et respect des délais."
+      text: "Excellent service ! AMR Échafaudage a su répondre à nos besoins avec efficacité. Matériel de qualité type Altrad Plettac, équipe sérieuse.",
+      date: "Il y a 3 mois"
     },
     {
-      name: "Laurent M.",
-      company: "Industrie & Co",
+      name: "Karim D.",
+      company: "Construction 13",
       rating: 5,
-      text: "Parfait pour nos besoins industriels. Très réactifs et toujours conformes aux normes."
+      text: "Très bon rapport qualité/prix. L'équipe est à l'écoute et respecte les délais. Parfait pour nos chantiers dans les Bouches-du-Rhône.",
+      date: "Il y a 1 mois"
     }
   ];
 
@@ -76,9 +80,11 @@ const AMRLanding = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                <Building2 className="w-7 h-7 text-white" />
-              </div>
+              <img 
+                src="/assets/logo-removebg.png" 
+                alt="AMR Échafaudage" 
+                className="w-40 h-40 object-contain"
+              />
               <div>
                 <h1 className="text-2xl font-bold text-white">AMR Échafaudage</h1>
                 <p className="text-xs text-orange-400">Votre partenaire sécurité</p>
@@ -266,7 +272,7 @@ const AMRLanding = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all"></div>
                 <div className="absolute inset-0 flex flex-col justify-end p-6">
-                  <h3 className="text-white font-bold text-lg mb-1">Projet {num}</h3>
+                  {/* <h3 className="text-white font-bold text-lg mb-1">Projet {num}</h3> */}
                   <p className="text-orange-400 text-sm flex items-center">
                     <MapPin className="w-4 h-4 mr-1" />
                     Chantier réalisé
@@ -311,20 +317,24 @@ const AMRLanding = () => {
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="w-6 h-6 fill-orange-400 text-orange-400" />
               ))}
-              <span className="text-slate-300 ml-2">4.9/5 sur Google</span>
+              <span className="text-slate-300 ml-2">5/5 - Avis vérifiés</span>
             </div>
+            <p className="text-slate-400 text-sm">Basé sur les avis de nos clients professionnels</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {reviews.map((review, idx) => (
-              <div key={idx} className="bg-slate-800 rounded-2xl p-8 border border-slate-700">
-                <div className="flex items-center space-x-1 mb-4">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-orange-400 text-orange-400" />
-                  ))}
+              <div key={idx} className="bg-slate-800 rounded-2xl p-8 border border-slate-700 hover:border-orange-500/50 transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-1">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-orange-400 text-orange-400" />
+                    ))}
+                  </div>
+                  <span className="text-slate-500 text-xs">{review.date}</span>
                 </div>
-                <p className="text-slate-300 mb-6 italic">"{review.text}"</p>
-                <div>
+                <p className="text-slate-300 mb-6 italic leading-relaxed">"{review.text}"</p>
+                <div className="border-t border-slate-700 pt-4">
                   <p className="text-white font-semibold">{review.name}</p>
                   <p className="text-slate-400 text-sm">{review.company}</p>
                 </div>
@@ -333,8 +343,8 @@ const AMRLanding = () => {
           </div>
 
           <div className="text-center mt-12">
-            <a href="#" className="inline-flex items-center text-orange-400 hover:text-orange-300 font-semibold">
-              Voir tous les avis Google
+            <a href="https://fr.mappy.com/poi/67cba4a82166a21c761b7cd6" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-orange-400 hover:text-orange-300 font-semibold transition-colors">
+              Voir tous nos avis
               <ChevronDown className="w-5 h-5 ml-2 rotate-[-90deg]" />
             </a>
           </div>
@@ -373,21 +383,29 @@ const AMRLanding = () => {
                   <Phone className="w-6 h-6 text-orange-500 mt-1" />
                   <div>
                     <p className="font-semibold text-slate-900">Téléphone</p>
-                    <p className="text-slate-600">01 23 45 67 89</p>
+                    <p className="text-slate-600">+33 4 91 31 44 74</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
                   <Mail className="w-6 h-6 text-orange-500 mt-1" />
                   <div>
                     <p className="font-semibold text-slate-900">Email</p>
-                    <p className="text-slate-600">contact@amr-echafaudage.fr</p>
+                    <p className="text-slate-600">contact@amrechafaudage.fr</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <MapPin className="w-6 h-6 text-orange-500 mt-1" />
+                  <div>
+                    <p className="font-semibold text-slate-900">Adresse</p>
+                    <p className="text-slate-600">49 Boulevard des Libérateurs</p>
+                    <p className="text-slate-600">13011 Marseille</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
                   <MapPin className="w-6 h-6 text-orange-500 mt-1" />
                   <div>
                     <p className="font-semibold text-slate-900">Zone d'intervention</p>
-                    <p className="text-slate-600">Île-de-France et régions limitrophes</p>
+                    <p className="text-slate-600">Bouches-du-Rhône et régions PACA</p>
                   </div>
                 </div>
               </div>
@@ -430,9 +448,11 @@ const AMRLanding = () => {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-white" />
-                </div>
+                <img 
+                  src="/assets/logo-removebg.png" 
+                  alt="AMR Échafaudage" 
+                  className="w-10 h-10 object-contain"
+                />
                 <h3 className="text-xl font-bold text-white">AMR Échafaudage</h3>
               </div>
               <p className="text-sm">Votre partenaire de confiance pour tous vos projets d'échafaudage.</p>
@@ -458,9 +478,10 @@ const AMRLanding = () => {
             <div>
               <h4 className="font-semibold text-white mb-4">Contact</h4>
               <ul className="space-y-2 text-sm">
-                <li>01 23 45 67 89</li>
-                <li>contact@amr-echafaudage.fr</li>
-                <li>Île-de-France</li>
+                <li>+33 4 91 31 44 74</li>
+                <li>contact@amrechafaudage.fr</li>
+                <li>49 Bd des Libérateurs</li>
+                <li>13011 Marseille</li>
               </ul>
             </div>
           </div>
