@@ -1,2 +1,0 @@
-# SSL certificates will be placed here after running certbot
-# This directory is mounted in the nginx container
