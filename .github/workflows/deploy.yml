@@ -65,40 +65,99 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
+          envs: GITHUB_ACTOR,GHCR_PAT,IMAGE_FULL_NAME
           script: |
+            echo "🚀 Starting deployment..."
+            
             # Navigate to project directory
             cd ~/amr-echaufaudage || { echo "❌ Project directory not found"; exit 1; }
+            echo "✅ In project directory"
             
             # Pull latest changes from git
+            echo "📥 Pulling latest code..."
             git pull origin main || git pull origin master
             
-            # Login to GitHub Container Registry
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
             # Create network if it doesn't exist
-            docker network create amr-network 2>/dev/null || true
+            echo "🌐 Ensuring Docker network exists..."
+            docker network create amr-network 2>/dev/null && echo "✅ Network created" || echo "✅ Network already exists"
             
-            # Set environment variable for docker-compose
-            export GITHUB_REPOSITORY="${{ github.repository }}"
+            # The full image name
+            IMAGE_NAME="ghcr.io/${{ github.repository }}/amr-echafaudage-frontend:latest"
+            echo "📦 Image: $IMAGE_NAME"
             
-            # Pull the latest image explicitly
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            # Try to login to GHCR if PAT is provided (for private images)
+            # If the image is public, this step will be skipped or fail gracefully
+            if [ -n "${{ secrets.GHCR_PAT }}" ]; then
+              echo "🔐 Logging in to GHCR with PAT..."
+              echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+              if [ $? -eq 0 ]; then
+                echo "✅ Logged in to GHCR"
+              else
+                echo "⚠️  GHCR login failed, assuming image is public"
+              fi
+            else
+              echo "ℹ️  No GHCR_PAT provided, assuming image is public"
+            fi
             
-            # Stop and remove old containers
-            docker-compose down 2>/dev/null || true
+            # Pull the latest image
+            echo "📥 Pulling latest image..."
+            docker pull "$IMAGE_NAME"
+            if [ $? -ne 0 ]; then
+              echo "❌ Failed to pull image"
+              echo ""
+              echo "📝 Troubleshooting steps:"
+              echo "1. Check if image exists: https://github.com/${{ github.repository }}/pkgs/container/amr-echaufaudage%2Famr-echafaudage-frontend"
+              echo "2. If image is private, create a PAT and add as GHCR_PAT secret"
+              echo "3. Or make the image public in package settings"
+              echo ""
+              echo "See GHCR-AUTH-GUIDE.md for detailed instructions"
+              exit 1
+            fi
+            echo "✅ Image pulled successfully"
             
-            # Start services with the pulled image (no build)
-            docker-compose up -d --no-build --pull always
+            # Stop and remove old container
+            echo "🛑 Stopping old container..."
+            docker stop amr-frontend 2>/dev/null && echo "✅ Container stopped" || echo "ℹ️  No container to stop"
+            docker rm amr-frontend 2>/dev/null && echo "✅ Container removed" || echo "ℹ️  No container to remove"
+            
+            # Start new container
+            echo "🚀 Starting new container..."
+            docker run -d \
+              --name amr-frontend \
+              --restart unless-stopped \
+              --network amr-network \
+              -p 3000:8080 \
+              -e NODE_ENV=production \
+              --health-cmd="wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1" \
+              --health-interval=30s \
+              --health-timeout=3s \
+              --health-retries=3 \
+              --health-start-period=10s \
+              "$IMAGE_NAME"
+            
+            if [ $? -eq 0 ]; then
+              echo "✅ Container started successfully"
+            else
+              echo "❌ Failed to start container"
+              docker logs amr-frontend 2>&1 || echo "No logs available"
+              exit 1
+            fi
             
             # Wait a moment for container to start
             sleep 5
             
-            # Clean up old images (keep last 2 versions)
-            docker image prune -af --filter "until=24h"
-            
             # Show running containers
-            echo "📦 Running containers:"
-            docker ps --filter "name=amr-frontend"
+            echo ""
+            echo "📊 Container Status:"
+            docker ps --filter "name=amr-frontend" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+            
+            # Clean up old images
+            echo ""
+            echo "🧹 Cleaning up old images..."
+            docker image prune -af --filter "until=24h" || true
+            
+            echo ""
+            echo "✅ Deployment completed successfully!"
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
@@ -108,6 +167,9 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
+            echo "🔍 Verifying deployment..."
+            echo ""
+            
             # Wait for container to be fully healthy
             echo "⏳ Waiting for container to start..."
             sleep 10
@@ -122,15 +184,17 @@ jobs:
               echo "📝 Recent logs:"
               docker logs --tail 20 amr-frontend
               echo ""
-              echo "🔍 Health check:"
-              docker inspect --format='{{.State.Health.Status}}' amr-frontend 2>/dev/null || echo "No health check configured"
+              echo "🔍 Health check status:"
+              docker inspect --format='{{.State.Health.Status}}' amr-frontend 2>/dev/null || echo "Health check starting..."
+              echo ""
+              echo "🎉 Deployment verification successful!"
             else
               echo "❌ Frontend container failed to start"
               echo ""
               echo "📝 Container logs:"
               docker logs amr-frontend 2>&1 || echo "No logs available"
               echo ""
-              echo "🔍 Docker compose status:"
-              cd ~/amr-echaufaudage && docker-compose ps
+              echo "🔍 All containers:"
+              docker ps -a
               exit 1
             fi
