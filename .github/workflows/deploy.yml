@@ -114,24 +114,26 @@ jobs:
             fi
             echo "✅ Image pulled successfully"
             
-            # CRITICAL: Stop and remove old container BEFORE starting new one
-            echo "🛑 Stopping and removing old container..."
-            docker stop amr-frontend 2>/dev/null && echo "✅ Container stopped" || echo "ℹ️  No container to stop"
-            docker rm amr-frontend 2>/dev/null && echo "✅ Container removed" || echo "ℹ️  No container to remove"
+            # CRITICAL: Force remove old container
+            echo "🛑 Removing old container..."
+            if docker ps -a | grep -q amr-frontend; then
+              echo "Found existing container, force removing..."
+              docker rm -f amr-frontend 2>/dev/null && echo "✅ Container force removed" || echo "⚠️  Failed to remove container"
+            else
+              echo "ℹ️  No existing container found"
+            fi
             
-            # Also check if port 3000 is in use by something else
+            # Wait a moment to ensure cleanup
+            sleep 2
+            
+            # Double check - remove any container with the same name
+            docker ps -a --filter "name=amr-frontend" -q | xargs -r docker rm -f 2>/dev/null || true
+            
+            # Check if port 3000 is in use
             echo "🔍 Checking port 3000..."
-            PORT_IN_USE=$(sudo lsof -ti:3000 2>/dev/null)
-            if [ -n "$PORT_IN_USE" ]; then
-              echo "⚠️  Port 3000 is in use by process(es): $PORT_IN_USE"
-              echo "📝 Checking what's using the port..."
-              sudo lsof -i:3000 || true
-              echo "🔧 Attempting to free port 3000..."
-              # Try to kill non-docker processes on port 3000
-              sudo lsof -ti:3000 | while read pid; do
-                echo "Killing process $pid..."
-                sudo kill -9 $pid 2>/dev/null || true
-              done
+            if sudo lsof -ti:3000 >/dev/null 2>&1; then
+              echo "⚠️  Port 3000 is in use, attempting to free..."
+              sudo lsof -ti:3000 | xargs -r sudo kill -9 2>/dev/null || true
               sleep 2
             else
               echo "✅ Port 3000 is available"
@@ -160,8 +162,11 @@ jobs:
               echo "📝 Checking container logs..."
               docker logs amr-frontend 2>&1 || echo "No logs available"
               echo ""
-              echo "📝 Checking port usage..."
+              echo "📝 Checking what's using port 3000..."
               sudo lsof -i:3000 || true
+              echo ""
+              echo "📝 Checking existing containers..."
+              docker ps -a --filter "name=amr-frontend"
               exit 1
             fi
             
