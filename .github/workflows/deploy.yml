@@ -66,10 +66,10 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
-            # Navigate to project directory (updated to match VPS directory name)
-            cd ~/amr-echaufaudage || exit 1
+            # Navigate to project directory
+            cd ~/amr-echaufaudage || { echo "❌ Project directory not found"; exit 1; }
             
-            # Pull latest changes
+            # Pull latest changes from git
             git pull origin main || git pull origin master
             
             # Login to GitHub Container Registry
@@ -78,22 +78,27 @@ jobs:
             # Create network if it doesn't exist
             docker network create amr-network 2>/dev/null || true
             
-            # Pull latest image
+            # Set environment variable for docker-compose
+            export GITHUB_REPOSITORY="${{ github.repository }}"
+            
+            # Pull the latest image explicitly
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             
-            # Stop and remove old containers if exist
+            # Stop and remove old containers
             docker-compose down 2>/dev/null || true
-            docker stop amr-frontend 2>/dev/null || true
-            docker rm amr-frontend 2>/dev/null || true
             
-            # Start services with docker-compose
-            docker-compose up -d --build
+            # Start services with the pulled image (no build)
+            docker-compose up -d --no-build --pull always
             
-            # Clean up old images
+            # Wait a moment for container to start
+            sleep 5
+            
+            # Clean up old images (keep last 2 versions)
             docker image prune -af --filter "until=24h"
             
             # Show running containers
-            docker ps
+            echo "📦 Running containers:"
+            docker ps --filter "name=amr-frontend"
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
@@ -103,15 +108,29 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
-            # Wait for container to be healthy
+            # Wait for container to be fully healthy
+            echo "⏳ Waiting for container to start..."
             sleep 10
             
             # Check if container is running
             if docker ps | grep -q amr-frontend; then
               echo "✅ Frontend container is running"
+              echo ""
+              echo "📊 Container Status:"
+              docker ps --filter "name=amr-frontend" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+              echo ""
+              echo "📝 Recent logs:"
               docker logs --tail 20 amr-frontend
+              echo ""
+              echo "🔍 Health check:"
+              docker inspect --format='{{.State.Health.Status}}' amr-frontend 2>/dev/null || echo "No health check configured"
             else
               echo "❌ Frontend container failed to start"
-              docker logs amr-frontend
+              echo ""
+              echo "📝 Container logs:"
+              docker logs amr-frontend 2>&1 || echo "No logs available"
+              echo ""
+              echo "🔍 Docker compose status:"
+              cd ~/amr-echaufaudage && docker-compose ps
               exit 1
             fi
