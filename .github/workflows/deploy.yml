@@ -114,20 +114,45 @@ jobs:
             fi
             echo "✅ Image pulled successfully"
             
-            # CRITICAL: Force remove old container
-            echo "🛑 Removing old container..."
-            if docker ps -a | grep -q amr-frontend; then
-              echo "Found existing container, force removing..."
-              docker rm -f amr-frontend 2>/dev/null && echo "✅ Container force removed" || echo "⚠️  Failed to remove container"
+            # CRITICAL: Force remove ALL containers with name amr-frontend using multiple methods
+            echo "🛑 Removing old container(s)..."
+            
+            # Method 1: Get container ID and force remove
+            CONTAINER_ID=$(docker ps -aq --filter "name=amr-frontend")
+            if [ -n "$CONTAINER_ID" ]; then
+              echo "Found container(s) with ID: $CONTAINER_ID"
+              echo "Force killing and removing..."
+              docker kill $CONTAINER_ID 2>/dev/null || true
+              docker rm -f $CONTAINER_ID 2>/dev/null || true
+              echo "✅ Container(s) removed"
             else
               echo "ℹ️  No existing container found"
             fi
             
-            # Wait a moment to ensure cleanup
-            sleep 2
+            # Method 2: Double check with name filter
+            docker ps -aq --filter "name=amr-frontend" | xargs -r docker rm -f 2>/dev/null || true
             
-            # Double check - remove any container with the same name
-            docker ps -a --filter "name=amr-frontend" -q | xargs -r docker rm -f 2>/dev/null || true
+            # Method 3: Try to remove by exact name
+            docker rm -f amr-frontend 2>/dev/null || true
+            
+            # Wait to ensure cleanup
+            sleep 3
+            
+            # Verify container is gone
+            if docker ps -a | grep -q amr-frontend; then
+              echo "⚠️  Container still exists, attempting aggressive cleanup..."
+              docker ps -a --format "{{.ID}} {{.Names}}" | grep amr-frontend | awk '{print $1}' | xargs -r docker rm -f 2>/dev/null || true
+              sleep 2
+            fi
+            
+            # Final check
+            if docker ps -a | grep -q amr-frontend; then
+              echo "❌ Failed to remove old container. Manual intervention required."
+              echo "Please SSH to the server and run: docker rm -f \$(docker ps -aq --filter 'name=amr-frontend')"
+              exit 1
+            fi
+            
+            echo "✅ All old containers removed"
             
             # Check if port 3000 is in use
             echo "🔍 Checking port 3000..."
