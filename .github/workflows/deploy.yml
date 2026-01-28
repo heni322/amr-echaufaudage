@@ -1,10 +1,8 @@
-name: Deploy to VPS
+name: Deploy Frontend
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [ main ]
   workflow_dispatch:
 
 env:
@@ -12,106 +10,114 @@ env:
   IMAGE_NAME: ${{ github.repository }}/amr-echafaudage-frontend
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=sha
+          type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            # Navigate to project directory (updated to match VPS directory name)
-            cd ~/amr-echaufaudage || exit 1
-            
-            # Pull latest changes
-            git pull origin main || git pull origin master
-            
-            # Login to GitHub Container Registry
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Create network if it doesn't exist
-            docker network create amr-network 2>/dev/null || true
-            
-            # Pull latest image
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
-            # Stop and remove old containers if exist
-            docker-compose down 2>/dev/null || true
-            docker stop amr-frontend 2>/dev/null || true
-            docker rm amr-frontend 2>/dev/null || true
-            
-            # Start services with docker-compose
-            docker-compose up -d --build
-            
-            # Clean up old images
-            docker image prune -af --filter "until=24h"
-            
-            # Show running containers
-            docker ps
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        envs: REGISTRY,IMAGE_NAME
+        script: |
+          # Stop and remove existing container
+          echo "🛑 Stopping existing container..."
+          docker stop amr-frontend 2>/dev/null || true
+          docker rm amr-frontend 2>/dev/null || true
+          
+          # Pull latest image
+          echo "⬇️  Pulling latest image..."
+          docker pull $REGISTRY/$IMAGE_NAME:latest
+          
+          # Start new container on port 3000
+          echo "🚀 Starting new container on port 3000..."
+          docker run -d \
+            --name amr-frontend \
+            --restart unless-stopped \
+            -p 3000:8080 \
+            --network amr-network \
+            --health-cmd='wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1' \
+            --health-interval=30s \
+            --health-timeout=10s \
+            --health-retries=3 \
+            --health-start-period=40s \
+            $REGISTRY/$IMAGE_NAME:latest
+          
+          echo "✅ Container started successfully"
 
-      - name: Verify deployment
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            # Wait for container to be healthy
-            sleep 10
+    - name: Verify deployment
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          # Wait for container to be healthy
+          echo "⏳ Waiting for container to start..."
+          sleep 15
+          
+          # Check if container is running
+          if docker ps | grep -q amr-frontend; then
+            echo "✅ Frontend container is running"
+            docker logs --tail 20 amr-frontend
             
-            # Check if container is running
-            if docker ps | grep -q amr-frontend; then
-              echo "✅ Frontend container is running"
-              docker logs --tail 20 amr-frontend
-            else
-              echo "❌ Frontend container failed to start"
-              docker logs amr-frontend
-              exit 1
-            fi
+            # Check health status
+            for i in {1..6}; do
+              HEALTH=$(docker inspect --format='{{.State.Health.Status}}' amr-frontend 2>/dev/null || echo "unknown")
+              echo "🏥 Health check ($i/6): $HEALTH"
+              
+              if [ "$HEALTH" = "healthy" ]; then
+                echo "✅ Container is healthy!"
+                echo "🌐 Application available at: http://your-domain:3000"
+                exit 0
+              fi
+              sleep 5
+            done
+            
+            echo "⚠️  Container running but still initializing"
+            exit 0
+          else
+            echo "❌ Frontend container failed to start"
+            docker logs amr-frontend 2>&1 || echo "No logs available"
+            exit 1
+          fi
