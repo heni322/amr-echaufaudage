@@ -86,7 +86,6 @@ jobs:
             echo "📦 Image: $IMAGE_NAME"
             
             # Try to login to GHCR if PAT is provided (for private images)
-            # If the image is public, this step will be skipped or fail gracefully
             if [ -n "${{ secrets.GHCR_PAT }}" ]; then
               echo "🔐 Logging in to GHCR with PAT..."
               echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -115,10 +114,28 @@ jobs:
             fi
             echo "✅ Image pulled successfully"
             
-            # Stop and remove old container
-            echo "🛑 Stopping old container..."
+            # CRITICAL: Stop and remove old container BEFORE starting new one
+            echo "🛑 Stopping and removing old container..."
             docker stop amr-frontend 2>/dev/null && echo "✅ Container stopped" || echo "ℹ️  No container to stop"
             docker rm amr-frontend 2>/dev/null && echo "✅ Container removed" || echo "ℹ️  No container to remove"
+            
+            # Also check if port 3000 is in use by something else
+            echo "🔍 Checking port 3000..."
+            PORT_IN_USE=$(sudo lsof -ti:3000 2>/dev/null)
+            if [ -n "$PORT_IN_USE" ]; then
+              echo "⚠️  Port 3000 is in use by process(es): $PORT_IN_USE"
+              echo "📝 Checking what's using the port..."
+              sudo lsof -i:3000 || true
+              echo "🔧 Attempting to free port 3000..."
+              # Try to kill non-docker processes on port 3000
+              sudo lsof -ti:3000 | while read pid; do
+                echo "Killing process $pid..."
+                sudo kill -9 $pid 2>/dev/null || true
+              done
+              sleep 2
+            else
+              echo "✅ Port 3000 is available"
+            fi
             
             # Start new container
             echo "🚀 Starting new container..."
@@ -139,7 +156,12 @@ jobs:
               echo "✅ Container started successfully"
             else
               echo "❌ Failed to start container"
+              echo ""
+              echo "📝 Checking container logs..."
               docker logs amr-frontend 2>&1 || echo "No logs available"
+              echo ""
+              echo "📝 Checking port usage..."
+              sudo lsof -i:3000 || true
               exit 1
             fi
             
