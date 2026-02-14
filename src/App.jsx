@@ -631,7 +631,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
                   <MapPin className="w-5 h-5 md:w-6 md:h-6 text-[#0077BE] mt-1 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-slate-900 text-sm md:text-base">Adresse</p>
-                    <p className="text-slate-600 text-sm md:text-base">49 Boulevard des Libérateurs</p>
+                    <p className="text-slate-600 text-sm md:text-base">546 boulevard Mireille lauze </p>
                     <p className="text-slate-600 text-sm md:text-base">13011 Marseille</p>
                   </div>
                 </div>

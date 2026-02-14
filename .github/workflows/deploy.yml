@@ -103,53 +103,41 @@ jobs:
             docker pull "$IMAGE_NAME"
             if [ $? -ne 0 ]; then
               echo "❌ Failed to pull image"
-              echo ""
-              echo "📝 Troubleshooting steps:"
-              echo "1. Check if image exists: https://github.com/${{ github.repository }}/pkgs/container/amr-echaufaudage%2Famr-echafaudage-frontend"
-              echo "2. If image is private, create a PAT and add as GHCR_PAT secret"
-              echo "3. Or make the image public in package settings"
-              echo ""
-              echo "See GHCR-AUTH-GUIDE.md for detailed instructions"
               exit 1
             fi
             echo "✅ Image pulled successfully"
             
-            # CRITICAL: Force remove ALL containers with name amr-frontend using multiple methods
+            # CRITICAL: Force remove old container with Docker restart if needed
             echo "🛑 Removing old container(s)..."
             
-            # Method 1: Get container ID and force remove
+            # Try standard removal first
             CONTAINER_ID=$(docker ps -aq --filter "name=amr-frontend")
             if [ -n "$CONTAINER_ID" ]; then
-              echo "Found container(s) with ID: $CONTAINER_ID"
-              echo "Force killing and removing..."
+              echo "Found container: $CONTAINER_ID"
               docker kill $CONTAINER_ID 2>/dev/null || true
               docker rm -f $CONTAINER_ID 2>/dev/null || true
-              echo "✅ Container(s) removed"
-            else
-              echo "ℹ️  No existing container found"
-            fi
-            
-            # Method 2: Double check with name filter
-            docker ps -aq --filter "name=amr-frontend" | xargs -r docker rm -f 2>/dev/null || true
-            
-            # Method 3: Try to remove by exact name
-            docker rm -f amr-frontend 2>/dev/null || true
-            
-            # Wait to ensure cleanup
-            sleep 3
-            
-            # Verify container is gone
-            if docker ps -a | grep -q amr-frontend; then
-              echo "⚠️  Container still exists, attempting aggressive cleanup..."
-              docker ps -a --format "{{.ID}} {{.Names}}" | grep amr-frontend | awk '{print $1}' | xargs -r docker rm -f 2>/dev/null || true
               sleep 2
             fi
             
-            # Final check
+            # Check if container still exists
             if docker ps -a | grep -q amr-frontend; then
-              echo "❌ Failed to remove old container. Manual intervention required."
-              echo "Please SSH to the server and run: docker rm -f \$(docker ps -aq --filter 'name=amr-frontend')"
-              exit 1
+              echo "⚠️  Container still exists, restarting Docker service..."
+              sudo systemctl restart docker
+              sleep 5
+              
+              # Try again after restart
+              CONTAINER_ID=$(docker ps -aq --filter "name=amr-frontend")
+              if [ -n "$CONTAINER_ID" ]; then
+                docker rm -f $CONTAINER_ID 2>/dev/null || true
+                sleep 2
+              fi
+              
+              # Final check
+              if docker ps -a | grep -q amr-frontend; then
+                echo "❌ Failed to remove container even after Docker restart"
+                echo "Manual cleanup required: docker rm -f \$(docker ps -aq --filter 'name=amr-frontend')"
+                exit 1
+              fi
             fi
             
             echo "✅ All old containers removed"
@@ -157,11 +145,9 @@ jobs:
             # Check if port 3000 is in use
             echo "🔍 Checking port 3000..."
             if sudo lsof -ti:3000 >/dev/null 2>&1; then
-              echo "⚠️  Port 3000 is in use, attempting to free..."
+              echo "⚠️  Port 3000 is in use, freeing..."
               sudo lsof -ti:3000 | xargs -r sudo kill -9 2>/dev/null || true
               sleep 2
-            else
-              echo "✅ Port 3000 is available"
             fi
             
             # Start new container
@@ -181,31 +167,15 @@ jobs:
             
             if [ $? -eq 0 ]; then
               echo "✅ Container started successfully"
+              sleep 5
+              docker ps --filter "name=amr-frontend" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
             else
               echo "❌ Failed to start container"
-              echo ""
-              echo "📝 Checking container logs..."
-              docker logs amr-frontend 2>&1 || echo "No logs available"
-              echo ""
-              echo "📝 Checking what's using port 3000..."
-              sudo lsof -i:3000 || true
-              echo ""
-              echo "📝 Checking existing containers..."
-              docker ps -a --filter "name=amr-frontend"
+              docker logs amr-frontend 2>&1 || true
               exit 1
             fi
             
-            # Wait a moment for container to start
-            sleep 5
-            
-            # Show running containers
-            echo ""
-            echo "📊 Container Status:"
-            docker ps --filter "name=amr-frontend" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-            
             # Clean up old images
-            echo ""
-            echo "🧹 Cleaning up old images..."
             docker image prune -af --filter "until=24h" || true
             
             echo ""
@@ -220,33 +190,17 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             echo "🔍 Verifying deployment..."
-            echo ""
-            
-            # Wait for container to be fully healthy
-            echo "⏳ Waiting for container to start..."
             sleep 10
             
-            # Check if container is running
             if docker ps | grep -q amr-frontend; then
               echo "✅ Frontend container is running"
-              echo ""
-              echo "📊 Container Status:"
               docker ps --filter "name=amr-frontend" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
               echo ""
-              echo "📝 Recent logs:"
               docker logs --tail 20 amr-frontend
               echo ""
-              echo "🔍 Health check status:"
-              docker inspect --format='{{.State.Health.Status}}' amr-frontend 2>/dev/null || echo "Health check starting..."
-              echo ""
-              echo "🎉 Deployment verification successful!"
+              echo "🎉 Deployment successful!"
             else
-              echo "❌ Frontend container failed to start"
-              echo ""
-              echo "📝 Container logs:"
-              docker logs amr-frontend 2>&1 || echo "No logs available"
-              echo ""
-              echo "🔍 All containers:"
-              docker ps -a
+              echo "❌ Container not running"
+              docker ps -a --filter "name=amr-frontend"
               exit 1
             fi
