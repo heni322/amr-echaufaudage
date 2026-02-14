@@ -631,7 +631,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
                   <MapPin className="w-5 h-5 md:w-6 md:h-6 text-[#0077BE] mt-1 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-slate-900 text-sm md:text-base">Adresse</p>
-                    <p className="text-slate-600 text-sm md:text-base">546 boulevard Mireille lauze </p>
+                    <p className="text-slate-600 text-sm md:text-base">546 boulevard Mireille lauze</p>
                     <p className="text-slate-600 text-sm md:text-base">13011 Marseille</p>
                   </div>
                 </div>
@@ -765,7 +765,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
               <ul className="space-y-2 text-sm">
                 <li><a href="tel:+33491314474" className="hover:text-[#0077BE] transition-colors">+33 4 91 31 44 74</a></li>
                 <li><a href="mailto:contact@amr-echafaudage.fr" className="hover:text-[#0077BE] transition-colors break-all">contact@amr-echafaudage.fr</a></li>
-                <li>49 Bd des Libérateurs</li>
+                <li>546 boulevard Mireille lauze</li>
                 <li>13011 Marseille</li>
               </ul>
             </div>
