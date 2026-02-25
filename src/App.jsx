@@ -189,7 +189,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans" itemScope itemType="https://schema.org/LocalBusiness">
       {/* Navigation */}
       <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-[#0077BE] shadow-lg' : 'bg-[#0077BE]/95'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -197,8 +197,9 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
             <div className="flex items-center space-x-2 md:space-x-3">
               <img 
                 src="/assets/logo-removebg.png" 
-                alt="AMR Échafaudage" 
+                alt="AMR Échafaudage logo" 
                 className="w-32 h-32 md:w-40 md:h-40 object-contain"
+                width="160" height="160"
               />
               <div className="hidden sm:block">
                 <h1 className="text-xl md:text-2xl font-bold text-white">AMR Échafaudage</h1>
@@ -240,7 +241,8 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 md:pt-20">
+      <main>
+      <section aria-label="Présentation AMR Échafaudage" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 md:pt-20">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <div className="absolute inset-0 opacity-20" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -255,15 +257,15 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
               </span>
             </div>
             
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-tight px-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-tight px-4" itemProp="name">
               Solutions d'échafaudage<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0077BE] to-[#005A8F]">
                 sécurisées
               </span> pour vos chantiers
             </h1>
             
-            <p className="text-lg sm:text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto px-4">
-              Location, montage et démontage d'échafaudages conformes aux normes en vigueur
+            <p className="text-lg sm:text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto px-4" itemProp="description">
+              Location, montage et démontage d'échafaudages conformes aux normes en vigueur — Marseille & région PACA
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center pt-4 px-4">
@@ -299,7 +301,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-12 md:py-20 bg-white">
+      <section id="about" aria-label="À propos de AMR Échafaudage" className="py-12 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
@@ -319,8 +321,10 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
               <div className="aspect-square bg-slate-200 rounded-2xl overflow-hidden">
                 <img 
                   src="/assets/image-1.jpeg" 
-                  alt="Échafaudage AMR"
+                  alt="Chantier d'échafaudage AMR à Marseille"
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  width="600" height="600"
                 />
               </div>
               <div className="hidden md:block absolute -bottom-6 -left-6 bg-[#3B4F5C] text-white p-6 md:p-8 rounded-xl shadow-2xl max-w-xs">
@@ -334,7 +338,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
       </section>
 
       {/* Services Section */}
-      <section id="services" className="py-12 md:py-20 bg-slate-50">
+      <section id="services" aria-label="Nos services d'échafaudage" className="py-12 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
@@ -371,7 +375,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
       </section>
 
       {/* Video Section */}
-      <section className="py-12 md:py-20 bg-slate-900">
+      <section aria-label="Savoir-faire AMR Échafaudage" className="py-12 md:py-20 bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
@@ -397,7 +401,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
                 poster="/assets/image-1.jpeg"
               >
                 <source src="/assets/video-1.mp4" type="video/mp4" />
-                Votre navigateur ne supporte pas la lecture de vidéos.
+                <p>Votre navigateur ne supporte pas la lecture de vidéos. Contactez AMR Échafaudage au +33 4 91 31 44 74.</p>
               </video>
             </div>
           </div>
@@ -453,7 +457,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
       </section>
 
       {/* Projects Gallery */}
-      <section id="realisations" className="py-12 md:py-20 bg-slate-50">
+      <section id="realisations" aria-label="Projets réalisés par AMR Échafaudage" className="py-12 md:py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
@@ -466,11 +470,13 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[1, 2, 3, 4, 5, 6].map((num) => (
-              <div key={num} className="group relative aspect-square bg-slate-800 rounded-2xl overflow-hidden cursor-pointer">
+              <article key={num} className="group relative aspect-square bg-slate-800 rounded-2xl overflow-hidden cursor-pointer">
                 <img 
                   src={`/assets/image-${num}.jpeg`} 
-                  alt={`Projet ${num}`}
+                  alt={`Chantier d'échafaudage AMR Marseille – réalisation ${num}`}
                   className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  width="400" height="400"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all"></div>
                 <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-6">
@@ -479,14 +485,14 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
                     Chantier réalisé
                   </p>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
       {/* Team Section */}
-      <section id="team" className="py-12 md:py-20 bg-white">
+      <section id="team" aria-label="Équipe AMR Échafaudage" className="py-12 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4" style={{color: '#8B9AA3'}}>
@@ -503,8 +509,10 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
                 <div className="relative aspect-[3/4] bg-slate-200 rounded-2xl overflow-hidden mb-4 md:mb-6 shadow-lg hover:shadow-2xl transition-shadow duration-300">
                   <img 
                     src={member.image} 
-                    alt={member.name}
+                    alt={`${member.name} – ${member.role} chez AMR Échafaudage`}
                     className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                    width="400" height="533"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#3B4F5C]/90 via-[#3B4F5C]/20 to-transparent opacity-70 group-hover:opacity-80 transition-opacity"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform">
@@ -541,7 +549,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
       </section>
 
       {/* Google Reviews */}
-      <section id="avis" className="py-12 md:py-20 bg-slate-900">
+      <section id="avis" aria-label="Avis clients AMR Échafaudage" className="py-12 md:py-20 bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 md:mb-4 px-4">
@@ -601,7 +609,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
       </section>
 
       {/* Contact Form */}
-      <section id="contact" className="py-12 md:py-20 bg-slate-50">
+      <section id="contact" aria-label="Contactez AMR Échafaudage" className="py-12 md:py-20 bg-slate-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12">
             <div>
@@ -631,8 +639,8 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
                   <MapPin className="w-5 h-5 md:w-6 md:h-6 text-[#0077BE] mt-1 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-slate-900 text-sm md:text-base">Adresse</p>
-                    <p className="text-slate-600 text-sm md:text-base">546 boulevard Mireille lauze</p>
-                    <p className="text-slate-600 text-sm md:text-base">13011 Marseille</p>
+                    <p className="text-slate-600 text-sm md:text-base" itemProp="streetAddress">546 boulevard Mireille Lauze</p>
+                    <p className="text-slate-600 text-sm md:text-base"><span itemProp="postalCode">13011</span> <span itemProp="addressLocality">Marseille</span></p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3 md:space-x-4">
@@ -725,16 +733,18 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
         </div>
       </section>
 
+      </main>
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-300 py-8 md:py-12">
+      <footer className="bg-slate-900 text-slate-300 py-8 md:py-12" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <img 
                   src="/assets/logo-removebg.png" 
-                  alt="AMR Échafaudage" 
+                  alt="AMR Échafaudage – logo" 
                   className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                  width="80" height="80"
                 />
                 <h3 className="text-lg md:text-xl font-bold text-white">AMR Échafaudage</h3>
               </div>
@@ -765,7 +775,7 @@ Cette demande a été envoyée depuis le site web AMR Échafaudage.
               <ul className="space-y-2 text-sm">
                 <li><a href="tel:+33491314474" className="hover:text-[#0077BE] transition-colors">+33 4 91 31 44 74</a></li>
                 <li><a href="mailto:contact@amr-echafaudage.fr" className="hover:text-[#0077BE] transition-colors break-all">contact@amr-echafaudage.fr</a></li>
-                <li>546 boulevard Mireille lauze</li>
+                <li>546 boulevard Mireille Lauze</li>
                 <li>13011 Marseille</li>
               </ul>
             </div>

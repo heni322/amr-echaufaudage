@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.amr-echafaudage.fr/sitemap.xml
+
+Disallow: /assets/
